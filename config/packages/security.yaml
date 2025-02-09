@@ -1,0 +1,37 @@
+security:
+    enable_authenticator_manager: true
+
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+            algorithm: plaintext
+
+    providers:  # ✅ Тепер правильно всередині `security:`
+        in_memory:
+            memory:
+                users:
+                    admin:
+                        password: "admin"  # ✅ Відкритий текст
+                        roles: ['ROLE_ADMIN']
+                    user:
+                        password: "user"
+                        roles: ['ROLE_USER']
+
+    firewalls:
+        login:
+            pattern: ^/api/login_check
+            stateless: true
+            json_login:
+                check_path: /api/login_check
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        api:
+            pattern: ^/api
+            stateless: true
+            jwt: ~
+
+    access_control:
+        - { path: ^/api/login, roles: PUBLIC_ACCESS }
+        - { path: ^/api/docs, roles: PUBLIC_ACCESS }
+        - { path: ^/api/v1/users, roles: ROLE_ADMIN }
+        - { path: ^/api,  roles: IS_AUTHENTICATED_FULLY }
